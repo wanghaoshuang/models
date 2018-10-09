@@ -14,12 +14,6 @@ def cal_padding(img_size, stride, filter_size, dilation=1):
 
 
 def instance_norm(input, name=None):
-    helper = fluid.layer_helper.LayerHelper("instance_norm", **locals())
-    dtype = helper.input_dtype()
-    epsilon = 1e-5
-    mean = fluid.layers.reduce_mean(input, dim=[2, 3], keep_dim=True)
-    var = fluid.layers.reduce_mean(
-        fluid.layers.square(input - mean), dim=[2, 3], keep_dim=True)
     if name is not None:
         scale_name = name + "_scale"
         offset_name = name + "_offset"
@@ -31,15 +25,13 @@ def instance_norm(input, name=None):
         name=offset_name,
         initializer=fluid.initializer.Constant(0.0),
         trainable=True)
-    scale = helper.create_parameter(
-        attr=scale_param, shape=input.shape[1:2], dtype=dtype)
-    offset = helper.create_parameter(
-        attr=offset_param, shape=input.shape[1:2], dtype=dtype)
 
-    tmp = fluid.layers.elementwise_mul(x=(input - mean), y=scale, axis=1)
-    tmp = tmp / fluid.layers.sqrt(var + epsilon)
-    tmp = fluid.layers.elementwise_add(tmp, offset, axis=1)
-    return tmp
+    return fluid.layers.layer_norm(
+        input,
+        name=name,
+        begin_norm_axis=2,
+        param_attr=scale_param,
+        bias_attr=offset_param)
 
 
 def conv2d(input,
