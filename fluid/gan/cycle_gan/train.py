@@ -4,6 +4,7 @@ from __future__ import print_function
 import data_reader
 import os
 import random
+import time
 import sys
 import paddle
 import argparse
@@ -116,7 +117,8 @@ def train(args):
             exe, out_path + "/d_a", main_program=d_A_trainer.program)
         fluid.io.save_persistables(
             exe, out_path + "/d_b", main_program=d_B_trainer.program)
-        print("saved checkpoint to {}".format(out_path))
+        print("{} - saved checkpoint to {}".format(
+            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), out_path))
         sys.stdout.flush()
 
     def init_model():
@@ -137,6 +139,10 @@ def train(args):
 
     for epoch in range(args.epoch):
         batch_id = 0
+        t_g_A_loss = 0.0
+        t_g_B_loss = 0.0
+        t_d_A_loss = 0.0
+        t_d_B_loss = 0.0
         for i in range(max_images_num):
             data_A = next(A_reader)
             data_B = next(B_reader)
@@ -176,11 +182,22 @@ def train(args):
                 feed={"input_A": tensor_A,
                       "fake_pool_A": fake_pool_A})
 
-            print("epoch{}; batch{}; g_A_loss: {}; d_B_loss: {}; g_B_loss: {}; d_A_loss: {};".format(
-                epoch, batch_id, g_A_loss[0], d_B_loss[0], g_B_loss[0],
-                d_A_loss[0]))
+            print(
+                "{} - epoch{}; batch{}; g_A_loss: {}; d_B_loss: {}; g_B_loss: {}; d_A_loss: {};".
+                format(
+                    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), epoch,
+                    batch_id, g_A_loss[0], d_B_loss[0], g_B_loss[0], d_A_loss[
+                        0]))
             sys.stdout.flush()
+            t_g_A_loss += g_A_loss[0]
+            t_g_B_loss += g_B_loss[0]
+            t_d_A_loss += d_A_loss[0]
+            t_d_B_loss += d_B_loss[0]
             batch_id += 1
+        print("{} - epoch{}; Average loss: [{}, {}, {}, {}]".format(
+            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(
+            )), epoch, t_g_A_loss / max_images_num, t_d_B_loss / max_images_num,
+            t_g_B_loss / max_images_num, t_d_A_loss / max_images_num))
 
         if args.run_test:
             test(epoch)
