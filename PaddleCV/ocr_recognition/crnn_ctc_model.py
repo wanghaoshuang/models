@@ -128,7 +128,7 @@ def encoder_net(images,
         input=conv_features,
         stride=[1, 1],
         filter_size=[conv_features.shape[2], 1])
-
+    fluid.layers.Print(sliced_feature, summarize=100, message="sliced_feature")
     para_attr = fluid.ParamAttr(
         regularizer=regularizer,
         gradient_clip=gradient_clip,
@@ -147,10 +147,12 @@ def encoder_net(images,
                            size=rnn_hidden_size * 3,
                            param_attr=para_attr,
                            bias_attr=bias_attr_nobias)
+    fluid.layers.Print(fc_1, summarize=100, message="fc_1")
     fc_2 = fluid.layers.fc(input=sliced_feature,
                            size=rnn_hidden_size * 3,
                            param_attr=para_attr,
                            bias_attr=bias_attr_nobias)
+    fluid.layers.Print(fc_2, summarize=100, message="fc_2")
 
     gru_forward = fluid.layers.dynamic_gru(
         input=fc_1,
@@ -166,6 +168,7 @@ def encoder_net(images,
         bias_attr=bias_attr,
         candidate_activation='relu')
 
+    fluid.layers.Print(gru_forward, summarize=100, message="gru_forward")
     w_attr = fluid.ParamAttr(
         regularizer=regularizer,
         gradient_clip=gradient_clip,
@@ -190,9 +193,9 @@ def ctc_train_net(args, data_shape, num_classes):
     learning_rate_decay = None
     regularizer = fluid.regularizer.L2Decay(L2_RATE)
 
-    images = fluid.layers.data(name='pixel', shape=data_shape, dtype='float32')
-    label = fluid.layers.data(
-        name='label', shape=[1], dtype='int32', lod_level=1)
+    images = fluid.data(name='pixel', shape=[None] + data_shape, dtype='float32')
+    label = fluid.data(
+        name='label', shape=[None, 1], dtype='int32', lod_level=1)
     fc_out = encoder_net(
         images,
         num_classes,
@@ -200,7 +203,12 @@ def ctc_train_net(args, data_shape, num_classes):
         use_cudnn=True if args.use_gpu else False)
     cost = fluid.layers.warpctc(
         input=fc_out, label=label, blank=num_classes, norm_by_times=True)
+
+    fluid.layers.Print(cost)
     sum_cost = fluid.layers.reduce_sum(cost)
+
+    
+
     decoded_out = fluid.layers.ctc_greedy_decoder(
         input=fc_out, blank=num_classes)
     casted_label = fluid.layers.cast(x=label, dtype='int64')

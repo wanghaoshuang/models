@@ -32,7 +32,7 @@ except NameError:
 SOS = 0
 EOS = 1
 NUM_CLASSES = 95
-DATA_SHAPE = [1, 48, 512]
+DATA_SHAPE = [1, 48, None]
 
 DATA_MD5 = "7256b1d5420d8c3e74815196e58cdad5"
 DATA_URL = "http://paddle-ocr-data.bj.bcebos.com/data.tar.gz"
@@ -41,7 +41,7 @@ SAVED_FILE_NAME = "data.tar.gz"
 DATA_DIR_NAME = "data"
 TRAIN_DATA_DIR_NAME = "train_images"
 TEST_DATA_DIR_NAME = "test_images"
-TRAIN_LIST_FILE_NAME = "train.list"
+TRAIN_LIST_FILE_NAME = "debug.list"
 TEST_LIST_FILE_NAME = "test.list"
 
 

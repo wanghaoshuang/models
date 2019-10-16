@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=5
 
 # download pretrain model
 root_url="http://paddle-imagenet-models-name.bj.bcebos.com"
@@ -32,19 +32,19 @@ fi
 
 cd -
 
-nohup python -u compress.py \
---model "MobileNet" \
---use_gpu 1 \
---batch_size 256 \
---total_images 1281167 \
---lr_strategy "piecewise_decay" \
---num_epochs 120 \
---lr 0.1 \
---l2_decay 3e-5 \
---pretrained_model ../pretrain/MobileNetV1_pretrained \
---config_file "./configs/mobilenet_v1.yaml" \
-> mobilenet_v1.log 2>&1 &
-tailf mobilenet_v1.log
+#nohup python -u compress.py \
+#--model "MobileNet" \
+#--use_gpu 1 \
+#--batch_size 256 \
+#--total_images 1281167 \
+#--lr_strategy "piecewise_decay" \
+#--num_epochs 120 \
+#--lr 0.1 \
+#--l2_decay 3e-5 \
+#--pretrained_model ../pretrain/MobileNetV1_pretrained \
+#--config_file "./configs/mobilenet_v1.yaml" \
+#> mobilenet_v1.log 2>&1 &
+#tailf mobilenet_v1.log
 
 # for compression of mobilenet_v2
 #nohup python -u compress.py \
@@ -63,16 +63,16 @@ tailf mobilenet_v1.log
 
 
 ## for compression of resnet34
-#python -u compress.py \
-#--model "ResNet34" \
-#--use_gpu 1 \
-#--batch_size 256 \
-#--total_images 1281167 \
-#--lr_strategy "cosine_decay" \
-#--lr 0.1 \
-#--num_epochs 120 \
-#--l2_decay 1e-4 \
-#--pretrained_model ../pretrain/ResNet34_pretrained \
-#--config_file "./configs/resnet34.yaml" \
-#> resnet34.log 2>&1 &
-#tailf resnet34.log
+python -u compress.py \
+--model "ResNet34" \
+--use_gpu 1 \
+--batch_size 256 \
+--total_images 1281167 \
+--lr_strategy "cosine_decay" \
+--lr 0.1 \
+--num_epochs 120 \
+--l2_decay 1e-4 \
+--pretrained_model ../pretrain/ResNet34_pretrained \
+--config_file "./configs/resnet34.yaml" \
+> resnet34.log 2>&1 &
+tailf resnet34.log

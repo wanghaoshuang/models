@@ -102,7 +102,12 @@ def train(args):
         fluid.default_startup_program().random_seed = 90
 
     exe.run(fluid.default_startup_program())
-
+    for block in fluid.default_main_program().blocks:
+        for param in block.all_parameters():
+            print("reset: {}".format(param.name))
+            t = fluid.global_scope().find_var(param.name).get_tensor()
+            shape = t.shape()
+            t.set(np.ones(shape).astype("float32"), place)
     # load init model
     if args.init_model is not None:
         model_dir = args.init_model
